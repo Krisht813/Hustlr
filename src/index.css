@@ -1,0 +1,260 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.bg-velocity-gradient {
+    background: linear-gradient(135deg, #00143f 0%, #00276a 100%);
+}
+
+/* Smooth theme transitions */
+*, *::before, *::after {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hide scrollbar globally */
+html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* ===== Dark Mode Theme Toggle Styles ===== */
+.theme-toggle {
+    position: relative;
+    width: 64px;
+    height: 32px;
+    border-radius: 999px;
+    cursor: pointer;
+    border: none;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    outline: none;
+}
+
+.theme-toggle--light {
+    background: linear-gradient(135deg, #e8e7ec, #dad9de);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.theme-toggle--dark {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.4), 0 0 12px rgba(178, 197, 255, 0.15);
+}
+
+/* ===== Page Reveal Animation System ===== */
+
+/* Lock scroll during reveal */
+body.reveal-active {
+    overflow: hidden;
+}
+
+/* Overlay Container */
+.reveal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+}
+
+/* Two halves that split apart */
+.reveal-half {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: #00143f;
+    transition: transform 0.9s cubic-bezier(0.76, 0, 0.24, 1);
+    will-change: transform;
+}
+
+.reveal-half--top {
+    top: 0;
+    bottom: 50%;
+}
+
+.reveal-half--bottom {
+    top: 50%;
+    bottom: 0;
+}
+
+/* When done → slide halves away */
+.reveal-overlay.reveal-done .reveal-half--top {
+    transform: translateY(-100%);
+}
+
+.reveal-overlay.reveal-done .reveal-half--bottom {
+    transform: translateY(100%);
+}
+
+/* Hide overlay completely after animation */
+.reveal-overlay.reveal-hidden {
+    display: none;
+    pointer-events: none;
+}
+
+/* Logo content in center */
+.reveal-brand {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.reveal-logo-text {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 3.5rem;
+    color: #ffffff;
+    letter-spacing: -0.04em;
+    opacity: 0;
+    transform: translateY(24px) scale(0.9);
+    animation: revealLogoIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+}
+
+.reveal-logo-dot {
+    color: #0c56d0;
+}
+
+/* Accent line under logo */
+.reveal-line {
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #0c56d0, #b2c5ff);
+    border-radius: 999px;
+    animation: revealLineGrow 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.55s forwards;
+}
+
+/* Logo fade out before split */
+.reveal-overlay.reveal-exit .reveal-brand {
+    animation: revealLogoOut 0.4s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+@keyframes revealLogoIn {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes revealLineGrow {
+    to {
+        width: 80px;
+    }
+}
+
+@keyframes revealLogoOut {
+    to {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+}
+
+/* ===== Scroll-triggered Animations ===== */
+
+/* Base scroll-animate class */
+.scroll-animate {
+    opacity: 0;
+    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+}
+
+.scroll-animate.revealed {
+    opacity: 1;
+    transform: none !important;
+}
+
+/* --- Variants --- */
+
+/* Fade up (default) */
+.scroll-fade-up {
+    transform: translateY(50px);
+}
+
+/* Fade down */
+.scroll-fade-down {
+    transform: translateY(-50px);
+}
+
+/* Slide in from left */
+.scroll-slide-left {
+    transform: translateX(-60px);
+}
+
+/* Slide in from right */
+.scroll-slide-right {
+    transform: translateX(60px);
+}
+
+/* Scale up */
+.scroll-scale-up {
+    transform: scale(0.9);
+}
+
+/* Scale + fade up combo */
+.scroll-scale-fade {
+    transform: translateY(40px) scale(0.95);
+}
+
+/* --- Stagger delays --- */
+.scroll-delay-1 { transition-delay: 0.1s; }
+.scroll-delay-2 { transition-delay: 0.2s; }
+.scroll-delay-3 { transition-delay: 0.3s; }
+.scroll-delay-4 { transition-delay: 0.4s; }
+.scroll-delay-5 { transition-delay: 0.5s; }
+.scroll-delay-6 { transition-delay: 0.6s; }
+
+/* Section-level reveal */
+.section-reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.section-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stagger children inside hero */
+.hero-stagger > * {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-stagger.revealed > *:nth-child(1) { transition-delay: 0.05s; }
+.hero-stagger.revealed > *:nth-child(2) { transition-delay: 0.15s; }
+.hero-stagger.revealed > *:nth-child(3) { transition-delay: 0.25s; }
+.hero-stagger.revealed > *:nth-child(4) { transition-delay: 0.35s; }
+
+.hero-stagger.revealed > * {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Bento card pop-in */
+.bento-reveal {
+    opacity: 0;
+    transform: translateY(30px) scale(0.96);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: 0.35s;
+}
+
+.bento-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
