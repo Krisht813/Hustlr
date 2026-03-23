@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../lib/auth'
+import SignOutConfirmModal from '../components/SignOutConfirmModal'
 
 const greetingByTime = () => {
   const h = new Date().getHours()
@@ -28,6 +29,8 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [isDark, setIsDark] = useState(false)
+  const [showSignOutModal, setShowSignOutModal] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -51,6 +54,22 @@ export default function Dashboard() {
     } else {
       document.documentElement.classList.remove('dark')
       localStorage.setItem('hustlr-theme', 'light')
+    }
+  }
+
+  const openSignOutModal = () => {
+    setShowProfileMenu(false)
+    setShowSignOutModal(true)
+  }
+
+  const handleConfirmSignOut = async () => {
+    setIsSigningOut(true)
+    try {
+      await signOut()
+      navigate('/')
+    } finally {
+      setIsSigningOut(false)
+      setShowSignOutModal(false)
     }
   }
 
@@ -259,7 +278,7 @@ export default function Dashboard() {
                       </div>
                       <div className="border-t border-[#e3e2e7] dark:border-white/[0.06] py-1">
                         <button
-                          onClick={() => { signOut(); navigate('/signin') }}
+                          onClick={openSignOutModal}
                           className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/[0.06] transition-colors"
                         >
                           <span className="material-symbols-outlined text-[18px]">logout</span>
@@ -465,6 +484,15 @@ export default function Dashboard() {
           )}
         </main>
       </div>
+
+      <SignOutConfirmModal
+        open={showSignOutModal}
+        userName={[profile?.first_name, profile?.last_name].filter(Boolean).join(' ')}
+        userEmail={profile?.email}
+        isLoading={isSigningOut}
+        onClose={() => setShowSignOutModal(false)}
+        onConfirm={handleConfirmSignOut}
+      />
     </div>
   )
 }

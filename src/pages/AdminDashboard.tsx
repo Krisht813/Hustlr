@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
+import SignOutConfirmModal from '../components/SignOutConfirmModal'
 
 interface UserProfile {
   id: string
@@ -25,6 +26,8 @@ export default function AdminDashboard() {
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [toast, setToast] = useState('')
+  const [showSignOutModal, setShowSignOutModal] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !isAdmin) {
@@ -78,6 +81,17 @@ export default function AdminDashboard() {
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 3000)
+  }
+
+  const handleConfirmSignOut = async () => {
+    setIsSigningOut(true)
+    try {
+      await signOut()
+      navigate('/')
+    } finally {
+      setIsSigningOut(false)
+      setShowSignOutModal(false)
+    }
   }
 
   const filteredUsers = users.filter(u => {
@@ -142,7 +156,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-3">
             <span className="text-sm text-[#5e6168] dark:text-[#8b92a0]">{profile?.email}</span>
             <button
-              onClick={signOut}
+              onClick={() => setShowSignOutModal(true)}
               className="text-sm font-medium text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors"
             >
               Sign out
@@ -364,6 +378,15 @@ export default function AdminDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SignOutConfirmModal
+        open={showSignOutModal}
+        userName={[profile?.first_name, profile?.last_name].filter(Boolean).join(' ')}
+        userEmail={profile?.email}
+        isLoading={isSigningOut}
+        onClose={() => setShowSignOutModal(false)}
+        onConfirm={handleConfirmSignOut}
+      />
     </div>
   )
 }

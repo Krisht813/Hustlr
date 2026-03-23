@@ -11,7 +11,6 @@ export default function SignIn() {
   const [isSignUp, setIsSignUp] = useState(true)
   const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [resetEmailSent, setResetEmailSent] = useState(false)
-  const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [agreed, setAgreed] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -66,7 +65,6 @@ export default function SignIn() {
     setError('')
     setSuccess('')
     setResetEmailSent(false)
-    setMagicLinkSent(false)
   }, [isSignUp, isForgotPassword])
 
   // Live username availability check with debounce
@@ -254,60 +252,26 @@ export default function SignIn() {
     }
     setSubmitting(true)
     setError('')
+    setSuccess('')
 
-    await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
       redirectTo: `${window.location.origin}/signin`,
     })
+
+    if (resetError) {
+      setError(resetError.message || 'Failed to send reset email. Please try again.')
+      setSubmitting(false)
+      return
+    }
 
     setResetEmailSent(true)
     setSubmitting(false)
   }
 
-  const handleMagicLink = async () => {
-    let emailForLink = loginId.trim()
-
-    if (!emailForLink) {
-      setError('Please enter your email address above.')
-      return
-    }
-
-    // If it's a username, look up the email
-    if (!emailForLink.includes('@')) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('username', emailForLink.toLowerCase())
-        .maybeSingle()
-
-      if (!profile) {
-        // Don't reveal if user exists
-        setMagicLinkSent(true)
-        return
-      }
-      emailForLink = profile.email
-    }
-
-    setSubmitting(true)
-    setError('')
-
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email: emailForLink,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    })
-
-    if (otpError) {
-      setError('Failed to send magic link. Please try again.')
-      setSubmitting(false)
-      return
-    }
-
-    setMagicLinkSent(true)
-    setSubmitting(false)
-  }
-
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
+    setError('')
+    setSuccess('')
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -784,65 +748,7 @@ export default function SignIn() {
                       isSignUp ? 'Create account' : 'Sign in'
                     )}
                   </motion.button>
-
-                  {/* Magic Link option — login only */}
-                  {!isSignUp && (
-                    <motion.button
-                      type="button"
-                      onClick={handleMagicLink}
-                      disabled={submitting}
-                      className="w-full flex items-center justify-center gap-2 bg-transparent border border-[#e3e2e7] dark:border-white/[0.08] text-[#00143f] dark:text-white py-3.5 rounded-xl font-bold text-sm hover:bg-[#f4f3f8] dark:hover:bg-white/[0.04] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                      whileHover={!submitting ? { scale: 1.01 } : {}}
-                      whileTap={!submitting ? { scale: 0.98 } : {}}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">magic_button</span>
-                      Send magic link instead
-                    </motion.button>
-                  )}
                 </form>
-
-                {/* Magic Link Sent Success */}
-                {magicLinkSent && (
-                  <motion.div
-                    className="absolute inset-0 bg-[#f8f7fc] dark:bg-[#0e1220] flex items-center justify-center px-6"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="w-full max-w-[460px] text-center">
-                      <motion.div
-                        className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[#0c56d0]/10 to-[#7da1ff]/10 dark:from-[#7da1ff]/10 dark:to-[#0c56d0]/10 flex items-center justify-center"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 0.5, delay: 0.1, type: 'spring', stiffness: 200 }}
-                      >
-                        <motion.span
-                          className="material-symbols-outlined text-[40px] text-[#0c56d0] dark:text-[#7da1ff]"
-                          initial={{ y: 10, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.3 }}
-                        >
-                          auto_awesome
-                        </motion.span>
-                      </motion.div>
-                      <h2 className="text-2xl font-bold text-[#00143f] dark:text-white mb-2 font-headline">Magic link sent!</h2>
-                      <p className="text-[#5e6168] dark:text-[#8b92a0] text-sm leading-relaxed max-w-[320px] mx-auto mb-8">
-                        If an account exists, you'll receive a sign-in link in your email. Click it to log in instantly — no password needed.
-                      </p>
-                      <div className="space-y-3">
-                        <motion.button
-                          type="button"
-                          onClick={() => setMagicLinkSent(false)}
-                          className="w-full bg-gradient-to-r from-[#0c56d0] to-[#3d7aed] text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-[#0c56d0]/25 transition-all"
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          Back to login
-                        </motion.button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
 
                 {/* Divider */}
                 <div className="flex items-center gap-4 my-7">
